@@ -6,47 +6,42 @@ namespace RFID_Demo
 {
     public partial class MainForm : Form
     {
-        SerialPort serialPort;
-        int tagCount = 0;
+        private SerialPort serialPort;
 
         public MainForm()
         {
             InitializeComponent();
-            InitSerialPort("COM5");
+            InitializeSerialPort();
         }
 
-        void InitSerialPort(string portName)
+        private void InitializeSerialPort()
         {
             try
             {
-                serialPort = new SerialPort(portName, 9600);
+                serialPort = new SerialPort("COM5", 9600);
                 serialPort.DataReceived += SerialPort_DataReceived;
                 serialPort.Open();
-                lblStatus.Text = $"Đang kết nối {portName}";
+                Invoke(() => logBox.AppendText("Đang kết nối COM5...\r\n"));
             }
             catch (Exception ex)
             {
-                lblStatus.Text = $"Không thể mở {portName}: {ex.Message}";
+                MessageBox.Show($"Không thể kết nối cổng COM: {ex.Message}");
             }
         }
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
-{
-    int bytes = serialPort.BytesToRead;
-    byte[] buffer = new byte[bytes];
-    serialPort.Read(buffer, 0, bytes);
+        {
+            int bytes = serialPort.BytesToRead;
+            byte[] buffer = new byte[bytes];
+            serialPort.Read(buffer, 0, bytes);
 
-    // Chuyển dữ liệu thành chuỗi HEX
-    string hex = BitConverter.ToString(buffer).Replace("-", " ");
+            // Chuyển dữ liệu sang dạng HEX (chuỗi ASCII)
+            string hex = BitConverter.ToString(buffer).Replace("-", " ");
 
-    Invoke(() =>
-    {
-        logBox.AppendText($"{DateTime.Now:HH:mm:ss} → {hex}\r\n");
-    });
-}
-
-                }));
-            }
+            Invoke(() =>
+            {
+                logBox.AppendText($"{DateTime.Now:HH:mm:ss} → {hex}\r\n");
+            });
         }
     }
 }
