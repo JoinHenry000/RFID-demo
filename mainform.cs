@@ -31,14 +31,20 @@ namespace RFID_Demo
         }
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            string data = serialPort.ReadLine().Trim();
-            if (!string.IsNullOrEmpty(data))
-            {
-                Invoke(new Action(() =>
-                {
-                    tagCount++;
-                    txtOutput.AppendText($"{tagCount}. {data}{Environment.NewLine}");
+{
+    int bytes = serialPort.BytesToRead;
+    byte[] buffer = new byte[bytes];
+    serialPort.Read(buffer, 0, bytes);
+
+    // Chuyển dữ liệu thành chuỗi HEX
+    string hex = BitConverter.ToString(buffer).Replace("-", " ");
+
+    Invoke(() =>
+    {
+        logBox.AppendText($"{DateTime.Now:HH:mm:ss} → {hex}\r\n");
+    });
+}
+
                 }));
             }
         }
